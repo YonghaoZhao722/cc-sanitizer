@@ -6,6 +6,15 @@
 import { readdir, stat, copyFile, unlink } from "node:fs/promises";
 import { join, resolve, basename } from "node:path";
 import { homedir } from "node:os";
+
+/**
+ * Decode a Claude Code project directory name back to a file path.
+ * Encoding: "/" → "-", "." → "--"
+ * So decode: "--" → ".", then "-" → "/"
+ */
+export function decodeProjectName(encoded: string): string {
+  return encoded.replace(/--/g, ".").replace(/-/g, "/");
+}
 import { isSuspectBlock } from "./signature.js";
 import { readSession, writeSession, backupSession } from "./session.js";
 import type {
@@ -211,7 +220,7 @@ export async function stripProject(
   projectDir: string,
   options: StripOptions
 ): Promise<StripResult[]> {
-  const projectName = basename(projectDir);
+  const projectName = decodeProjectName(basename(projectDir));
   const files = await findSessionFiles(projectDir);
   const results: StripResult[] = [];
   for (const f of files) {
@@ -226,7 +235,7 @@ export async function stripProject(
  * Scan all session files in a project directory.
  */
 export async function scanProject(projectDir: string): Promise<ScanResult[]> {
-  const projectName = basename(projectDir);
+  const projectName = decodeProjectName(basename(projectDir));
   const files = await findSessionFiles(projectDir);
   const results: ScanResult[] = [];
   for (const f of files) {
