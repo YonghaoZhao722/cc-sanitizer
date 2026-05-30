@@ -30,7 +30,7 @@ const program = new Command();
 program
   .name("cc-sanitizer")
   .description("Clean thinking blocks from Claude Code sessions")
-  .version("0.1.0");
+  .version("0.1.3");
 
 // ── strip ────────────────────────────────────────────────────────────────────
 
