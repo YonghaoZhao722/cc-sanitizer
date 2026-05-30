@@ -3,18 +3,9 @@
  * from assistant messages in a Claude Code session.
  */
 
-import { readdir, stat, copyFile, unlink } from "node:fs/promises";
+import { readdir, stat, copyFile, unlink, readFile } from "node:fs/promises";
 import { join, resolve, basename } from "node:path";
 import { homedir } from "node:os";
-
-/**
- * Decode a Claude Code project directory name back to a file path.
- * Encoding: "/" → "-", "." → "--"
- * So decode: "--" → ".", then "-" → "/"
- */
-export function decodeProjectName(encoded: string): string {
-  return encoded.replace(/--/g, ".").replace(/-/g, "/");
-}
 import { isSuspectBlock } from "./signature.js";
 import { readSession, writeSession, backupSession } from "./session.js";
 import type {
@@ -242,14 +233,37 @@ export async function resolveTarget(target: string): Promise<string | null> {
 }
 
 /**
+ * Determine a project's display label. The directory name is a lossy encoding
+ * of the working directory (Claude Code turns every non-alphanumeric character
+ * into "-", so "cc-sanitizer" and "cc/sanitizer" collide), so it cannot be
+ * decoded reliably. Instead read the real `cwd` recorded inside the session
+ * events, falling back to the raw directory name when none is found.
+ */
+async function projectLabel(projectDir: string, files: string[]): Promise<string> {
+  for (const file of files) {
+    const content = await readFile(file, "utf-8").catch(() => "");
+    for (const line of content.split("\n")) {
+      if (!line.trim()) continue;
+      try {
+        const cwd = (JSON.parse(line) as { cwd?: unknown }).cwd;
+        if (typeof cwd === "string" && cwd) return cwd;
+      } catch {
+        // ignore malformed lines
+      }
+    }
+  }
+  return basename(projectDir);
+}
+
+/**
  * Strip all session files in a project directory.
  */
 export async function stripProject(
   projectDir: string,
   options: StripOptions
 ): Promise<StripResult[]> {
-  const projectName = decodeProjectName(basename(projectDir));
   const files = await findSessionFiles(projectDir);
+  const projectName = await projectLabel(projectDir, files);
   const results: StripResult[] = [];
   for (const f of files) {
     const r = await stripFile(f, options);
@@ -263,8 +277,8 @@ export async function stripProject(
  * Scan all session files in a project directory.
  */
 export async function scanProject(projectDir: string): Promise<ScanResult[]> {
-  const projectName = decodeProjectName(basename(projectDir));
   const files = await findSessionFiles(projectDir);
+  const projectName = await projectLabel(projectDir, files);
   const results: ScanResult[] = [];
   for (const f of files) {
     const r = await scanFile(f);

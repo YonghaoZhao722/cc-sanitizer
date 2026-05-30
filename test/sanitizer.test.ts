@@ -4,7 +4,7 @@ import { writeFile, mkdir, rm, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomBytes } from "node:crypto";
-import { stripFile, scanFile, restoreFile, resolveTarget } from "../src/sanitizer.js";
+import { stripFile, scanFile, restoreFile, resolveTarget, scanProject } from "../src/sanitizer.js";
 
 const TEST_DIR = join(tmpdir(), `cc-sanitizer-test-${randomBytes(8).toString("hex")}`);
 
@@ -202,6 +202,34 @@ describe("resolveTarget", () => {
 
   it("returns null when nothing matches", async () => {
     assert.equal(await resolveTarget("does-not-exist-anywhere"), null);
+  });
+});
+
+describe("scanProject", () => {
+  it("labels the project with the real cwd from sessions, not the encoded dir name", async () => {
+    const dir = join(TEST_DIR, "-tmp-proj-with-dash");
+    await mkdir(dir, { recursive: true });
+    const session = [
+      JSON.stringify({ type: "user", cwd: "/tmp/proj-with-dash", message: { role: "user", content: "hi" } }),
+      JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: "yo" }] } }),
+    ].join("\n") + "\n";
+    await writeFile(join(dir, "s1.jsonl"), session, "utf-8");
+
+    const results = await scanProject(dir);
+    assert.equal(results[0].project, "/tmp/proj-with-dash");
+  });
+
+  it("falls back to the directory name when no cwd is present", async () => {
+    const dir = join(TEST_DIR, "-tmp-no-cwd");
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, "s1.jsonl"),
+      JSON.stringify({ type: "summary", summary: "x" }) + "\n",
+      "utf-8"
+    );
+
+    const results = await scanProject(dir);
+    assert.equal(results[0].project, "-tmp-no-cwd");
   });
 });
 
