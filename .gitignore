@@ -5,3 +5,4 @@ dist/
 !src/**/*.d.ts
 .DS_Store
 .omc/
+CLAUDE.md
