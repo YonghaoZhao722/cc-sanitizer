@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 340" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+    <marker id="ar-b" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#58a6ff"/>
+    </marker>
+    <marker id="ar-g" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#3fb950"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="880" height="340" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="878" height="338" rx="15" fill="none" stroke="#30363d" stroke-width="1.5"/>
+
+  <!-- Title -->
+  <text x="440" y="56" text-anchor="middle" font-size="40" font-weight="700">
+    <tspan fill="#58a6ff">cc-</tspan><tspan fill="#e6edf3">sanitizer</tspan>
+  </text>
+  <text x="440" y="88" text-anchor="middle" font-size="15" fill="#8b949e">strip invalid thinking blocks → fix cross-model Claude Code sessions</text>
+
+  <!-- ===== Stage 1: broken session ===== -->
+  <g>
+    <rect x="104" y="135" width="92" height="120" rx="7" fill="#e6edf3"/>
+    <rect x="104" y="135" width="92" height="14" rx="7" fill="#d0d7de"/>
+    <rect x="104" y="143" width="92" height="6" fill="#d0d7de"/>
+    <circle cx="113" cy="142" r="2.5" fill="#f85149"/>
+    <circle cx="121" cy="142" r="2.5" fill="#d29922"/>
+    <circle cx="129" cy="142" r="2.5" fill="#3fb950"/>
+    <rect x="114" y="158" width="64" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="114" y="168" width="50" height="5" rx="1.5" fill="#afb8c1"/>
+    <!-- bad thinking block -->
+    <rect x="110" y="178" width="80" height="34" rx="3" fill="#f8514922" stroke="#f85149" stroke-width="1.5"/>
+    <rect x="116" y="185" width="52" height="4" rx="1.5" fill="#f85149"/>
+    <rect x="116" y="193" width="60" height="4" rx="1.5" fill="#f85149"/>
+    <rect x="116" y="201" width="40" height="4" rx="1.5" fill="#f85149"/>
+    <rect x="114" y="220" width="58" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="114" y="230" width="44" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="114" y="240" width="64" height="5" rx="1.5" fill="#afb8c1"/>
+    <!-- error badge -->
+    <circle cx="196" cy="135" r="12" fill="#f85149" stroke="#0d1117" stroke-width="2"/>
+    <text x="196" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">×</text>
+  </g>
+  <text x="150" y="278" text-anchor="middle" font-size="13" font-weight="700" fill="#f85149">Invalid signature</text>
+  <text x="150" y="296" text-anchor="middle" font-size="11" fill="#8b949e">thinking block, no sig</text>
+
+  <!-- ===== Stage 3: clean session ===== -->
+  <g>
+    <rect x="684" y="135" width="92" height="120" rx="7" fill="#e6edf3"/>
+    <rect x="684" y="135" width="92" height="14" rx="7" fill="#d0d7de"/>
+    <rect x="684" y="143" width="92" height="6" fill="#d0d7de"/>
+    <circle cx="693" cy="142" r="2.5" fill="#f85149"/>
+    <circle cx="701" cy="142" r="2.5" fill="#d29922"/>
+    <circle cx="709" cy="142" r="2.5" fill="#3fb950"/>
+    <rect x="694" y="158" width="64" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="168" width="50" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="178" width="60" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="188" width="46" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="198" width="64" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="208" width="52" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="220" width="58" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="230" width="44" height="5" rx="1.5" fill="#afb8c1"/>
+    <rect x="694" y="240" width="64" height="5" rx="1.5" fill="#afb8c1"/>
+    <!-- ok badge -->
+    <circle cx="776" cy="135" r="12" fill="#3fb950" stroke="#0d1117" stroke-width="2"/>
+    <text x="776" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">✓</text>
+  </g>
+  <text x="730" y="278" text-anchor="middle" font-size="13" font-weight="700" fill="#3fb950">Clean ✓</text>
+  <text x="730" y="296" text-anchor="middle" font-size="11" fill="#8b949e">works with official models</text>
+
+  <!-- ===== Arrows ===== -->
+  <text x="297" y="184" text-anchor="middle" font-size="11" fill="#8b949e">strip</text>
+  <line x1="206" y1="196" x2="388" y2="196" stroke="#58a6ff" stroke-width="2.5" marker-end="url(#ar-b)"/>
+  <text x="583" y="184" text-anchor="middle" font-size="11" fill="#8b949e">clean</text>
+  <line x1="490" y1="196" x2="676" y2="196" stroke="#3fb950" stroke-width="2.5" marker-end="url(#ar-g)"/>
+
+  <!-- red dust (removed blocks) flying off, left of bot -->
+  <rect x="367" y="141" width="11" height="11" rx="2" fill="#f85149" opacity="0.92" transform="rotate(18 372.5 146.5)"/>
+  <rect x="357" y="167" width="8" height="8" rx="2" fill="#ff7b72" opacity="0.8" transform="rotate(-12 361 171)"/>
+  <rect x="386" y="153" width="7" height="7" rx="1" fill="#f85149" opacity="0.85" transform="rotate(25 389.5 156.5)"/>
+  <rect x="349" y="156" width="6" height="6" rx="1" fill="#ff7b72" opacity="0.6"/>
+
+  <!-- green sparkles, right of bot -->
+  <polygon points="505,157 507.75,165.25 516,168 507.75,170.75 505,179 502.25,170.75 494,168 502.25,165.25" fill="#3fb950"/>
+  <polygon points="560,142 562,148 568,150 562,152 560,158 558,152 552,150 558,148" fill="#56d364"/>
+  <polygon points="612,174 614.25,180.75 621,183 614.25,185.25 612,192 609.75,185.25 603,183 609.75,180.75" fill="#3fb950"/>
+  <polygon points="650,152 651.5,156.5 656,158 651.5,159.5 650,164 648.5,159.5 644,158 648.5,156.5" fill="#56d364"/>
+
+  <!-- ===== cc-sanitizer bot ===== -->
+  <ellipse cx="440" cy="234" rx="34" ry="6" fill="#000000" opacity="0.32"/>
+  <g transform="translate(412,164)">
+    <!-- antenna -->
+    <rect x="24" y="-7" width="3" height="9" fill="#8b949e"/>
+    <rect x="21" y="-14" width="9" height="9" rx="2" fill="#58a6ff"/>
+    <rect x="22.5" y="-12.5" width="3" height="3" fill="#bcd8ff"/>
+    <!-- head -->
+    <rect x="7" y="7" width="42" height="21" rx="5" fill="#c9d1d9"/>
+    <rect x="12" y="10" width="32" height="15" rx="3" fill="#0d1117"/>
+    <rect x="17" y="14" width="6" height="6" rx="1" fill="#58a6ff"/>
+    <rect x="33" y="14" width="6" height="6" rx="1" fill="#58a6ff"/>
+    <!-- smile -->
+    <rect x="18" y="20" width="4" height="3" rx="1" fill="#58a6ff"/>
+    <rect x="22" y="22" width="5" height="3" rx="1" fill="#58a6ff"/>
+    <rect x="29" y="22" width="5" height="3" rx="1" fill="#58a6ff"/>
+    <rect x="34" y="20" width="4" height="3" rx="1" fill="#58a6ff"/>
+    <!-- body -->
+    <rect x="7" y="30" width="42" height="24" rx="5" fill="#58a6ff"/>
+    <rect x="20" y="36" width="16" height="12" rx="3" fill="#ffffff"/>
+    <rect x="23" y="39" width="10" height="2" rx="1" fill="#58a6ff"/>
+    <rect x="23" y="43" width="10" height="2" rx="1" fill="#58a6ff"/>
+    <!-- arms + hands -->
+    <rect x="0" y="32" width="7" height="14" rx="2" fill="#c9d1d9"/>
+    <rect x="-2" y="44" width="8" height="8" rx="2" fill="#c9d1d9"/>
+    <rect x="49" y="32" width="7" height="14" rx="2" fill="#c9d1d9"/>
+    <rect x="50" y="44" width="8" height="8" rx="2" fill="#c9d1d9"/>
+    <!-- legs + feet -->
+    <rect x="14" y="54" width="8" height="9" fill="#8b949e"/>
+    <rect x="34" y="54" width="8" height="9" fill="#8b949e"/>
+    <rect x="11" y="61" width="12" height="5" rx="2" fill="#6e7681"/>
+    <rect x="31" y="61" width="12" height="5" rx="2" fill="#6e7681"/>
+  </g>
+</svg>
