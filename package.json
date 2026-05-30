@@ -1,6 +1,6 @@
 {
   "name": "cc-sanitizer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Clean thinking blocks from Claude Code sessions to fix cross-model compatibility",
   "type": "module",
   "bin": {

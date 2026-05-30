@@ -203,13 +203,21 @@ function printStripResults(results: StripResult[]): void {
   let totalRedacted = 0;
   let anyModified = false;
 
+  const hasProject = results.some(r => r.project);
+  let lastProject: string | undefined;
+
   for (const r of results) {
+    if (hasProject && r.project && r.project !== lastProject) {
+      console.log(chalk.bold(`\n  ${r.project}/`));
+      lastProject = r.project;
+    }
+
     const removed = r.thinkingRemoved + r.redactedRemoved;
     totalThinking += r.thinkingRemoved;
     totalRedacted += r.redactedRemoved;
 
     if (removed === 0) {
-      console.log(chalk.dim(`  ${basename(r.file)}: clean`));
+      console.log(chalk.dim(`    ${basename(r.file)}: clean`));
       continue;
     }
 
@@ -227,7 +235,7 @@ function printStripResults(results: StripResult[]): void {
       : r.backedUp
         ? chalk.green("(backed up)")
         : "";
-    console.log(`  ${chalk.cyan(basename(r.file))}: removed ${parts.join(", ")} ${status}`);
+    console.log(`    ${chalk.cyan(basename(r.file))}: removed ${parts.join(", ")} ${status}`);
   }
 
   if (!anyModified && results.length > 0) {
@@ -249,10 +257,18 @@ function printScanResults(results: ScanResult[]): void {
   let totalSuspect = 0;
   let hasSuspect = false;
 
+  const hasProject = results.some(r => r.project);
+  let lastProject: string | undefined;
+
   for (const r of results) {
+    if (hasProject && r.project && r.project !== lastProject) {
+      console.log(chalk.bold(`\n  ${r.project}/`));
+      lastProject = r.project;
+    }
+
     totalSuspect += r.suspectBlocks;
     if (r.thinkingBlocks + r.redactedBlocks === 0) {
-      console.log(chalk.dim(`  ${basename(r.file)}: no thinking blocks`));
+      console.log(chalk.dim(`    ${basename(r.file)}: no thinking blocks`));
       continue;
     }
 
@@ -267,7 +283,7 @@ function printScanResults(results: ScanResult[]): void {
     if (r.suspectBlocks > 0)
       parts.push(chalk.red(`${r.suspectBlocks} suspect`));
 
-    console.log(`  ${chalk.cyan(basename(r.file))}: ${parts.join(", ")}`);
+    console.log(`    ${chalk.cyan(basename(r.file))}: ${parts.join(", ")}`);
   }
 
   if (!hasSuspect && results.length > 0) {

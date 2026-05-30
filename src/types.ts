@@ -87,6 +87,7 @@ export type SessionEvent =
 
 export interface ScanResult {
   file: string;
+  project?: string;
   thinkingBlocks: number;
   redactedBlocks: number;
   validSignature: number;
@@ -95,6 +96,7 @@ export interface ScanResult {
 
 export interface StripResult {
   file: string;
+  project?: string;
   totalLines: number;
   thinkingRemoved: number;
   redactedRemoved: number;

@@ -211,10 +211,13 @@ export async function stripProject(
   projectDir: string,
   options: StripOptions
 ): Promise<StripResult[]> {
+  const projectName = basename(projectDir);
   const files = await findSessionFiles(projectDir);
   const results: StripResult[] = [];
   for (const f of files) {
-    results.push(await stripFile(f, options));
+    const r = await stripFile(f, options);
+    r.project = projectName;
+    results.push(r);
   }
   return results;
 }
@@ -223,10 +226,13 @@ export async function stripProject(
  * Scan all session files in a project directory.
  */
 export async function scanProject(projectDir: string): Promise<ScanResult[]> {
+  const projectName = basename(projectDir);
   const files = await findSessionFiles(projectDir);
   const results: ScanResult[] = [];
   for (const f of files) {
-    results.push(await scanFile(f));
+    const r = await scanFile(f);
+    r.project = projectName;
+    results.push(r);
   }
   return results;
 }
