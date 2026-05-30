@@ -1,15 +1,17 @@
 <div align="center">
 
-# cc-sanitizer
-
 <img src="assets/hero.svg" alt="cc-sanitizer — strip invalid thinking blocks to fix cross-model Claude Code sessions" width="100%">
+
+# CC-Sanitizer
+
+### A CLI tool to clean thinking blocks from [Claude Code](https://docs.anthropic.com/en/docs/claude-code) sessions, fixing cross-model compatibility issues.
 
 [![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)](https://www.npmjs.com/package/cc-sanitizer)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://www.npmjs.com/package/cc-sanitizer)
 [![Built with TypeScript](https://img.shields.io/badge/built%20with-TypeScript-3178C6.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A CLI tool to clean thinking blocks from [Claude Code](https://docs.anthropic.com/en/docs/claude-code) sessions, fixing cross-model compatibility issues.
+
 
 </div>
 
