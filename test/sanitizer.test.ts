@@ -1,23 +1,28 @@
-import { describe, it, beforeEach, afterEach } from "node:test";
+import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { writeFile, mkdir, rm, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { randomBytes } from "node:crypto";
 import { stripFile, scanFile, restoreFile } from "../src/sanitizer.js";
 
-const TEST_DIR = join(tmpdir(), `cc-sanitizer-test-${Date.now()}`);
+const TEST_DIR = join(tmpdir(), `cc-sanitizer-test-${randomBytes(8).toString("hex")}`);
 
-beforeEach(async () => {
+before(async () => {
   await mkdir(TEST_DIR, { recursive: true });
 });
 
-afterEach(async () => {
+after(async () => {
   await rm(TEST_DIR, { recursive: true, force: true });
 });
 
+function tmpFile(name: string): string {
+  return join(TEST_DIR, name);
+}
+
 // Helper to build a JSONL session with thinking blocks
 function buildSession(
-  blocks: Array<{ type: string; thinking?: string; signature?: string; text?: string }>
+  blocks: Array<{ type: string; thinking?: string; signature?: string; text?: string; data?: string }>
 ): string {
   return [
     JSON.stringify({ type: "summary", summary: "test", leafUuid: "abc" }),
@@ -33,7 +38,7 @@ function buildSession(
 
 describe("scanFile", () => {
   it("counts thinking blocks with valid and suspect signatures", async () => {
-    const file = join(TEST_DIR, "scan.jsonl");
+    const file = tmpFile("scan-valid-suspect.jsonl");
     const content = buildSession([
       { type: "thinking", thinking: "suspect", signature: "short" },
       { type: "text", text: "hello" },
@@ -48,7 +53,7 @@ describe("scanFile", () => {
   });
 
   it("counts redacted_thinking blocks", async () => {
-    const file = join(TEST_DIR, "scan2.jsonl");
+    const file = tmpFile("scan-redacted.jsonl");
     const content = buildSession([
       { type: "redacted_thinking", data: "xxx" },
       { type: "text", text: "hello" },
@@ -61,7 +66,7 @@ describe("scanFile", () => {
   });
 
   it("returns zero for clean session", async () => {
-    const file = join(TEST_DIR, "clean.jsonl");
+    const file = tmpFile("scan-clean.jsonl");
     const content = buildSession([{ type: "text", text: "no thinking" }]);
     await writeFile(file, content, "utf-8");
 
@@ -73,7 +78,7 @@ describe("scanFile", () => {
 
 describe("stripFile", () => {
   it("removes all thinking blocks by default", async () => {
-    const file = join(TEST_DIR, "strip.jsonl");
+    const file = tmpFile("strip-all.jsonl");
     const content = buildSession([
       { type: "thinking", thinking: "a", signature: "A".repeat(700) },
       { type: "text", text: "hello" },
@@ -84,7 +89,6 @@ describe("stripFile", () => {
     assert.equal(result.thinkingRemoved, 1);
     assert.equal(result.eventsRemoved, 0);
 
-    // Verify the file no longer has thinking blocks
     const events = JSON.parse(
       (await readFile(file, "utf-8")).split("\n").filter(l => l.trim())[2]
     );
@@ -93,7 +97,7 @@ describe("stripFile", () => {
   });
 
   it("only removes suspect blocks in suspect-only mode", async () => {
-    const file = join(TEST_DIR, "suspect.jsonl");
+    const file = tmpFile("strip-suspect.jsonl");
     const content = buildSession([
       { type: "thinking", thinking: "suspect", signature: "short" },
       { type: "thinking", thinking: "valid", signature: "A".repeat(700) },
@@ -114,7 +118,7 @@ describe("stripFile", () => {
   });
 
   it("removes events with empty content after stripping", async () => {
-    const file = join(TEST_DIR, "empty.jsonl");
+    const file = tmpFile("strip-empty.jsonl");
     const content = buildSession([
       { type: "thinking", thinking: "only block", signature: "short" },
     ]);
@@ -124,14 +128,13 @@ describe("stripFile", () => {
     assert.equal(result.thinkingRemoved, 1);
     assert.equal(result.eventsRemoved, 1);
 
-    // The assistant event should be gone
     const raw = await readFile(file, "utf-8");
     const lines = raw.split("\n").filter(l => l.trim());
     assert.equal(lines.length, 2); // summary + user only
   });
 
   it("does not modify file in dry-run mode", async () => {
-    const file = join(TEST_DIR, "dryrun.jsonl");
+    const file = tmpFile("strip-dryrun.jsonl");
     const content = buildSession([
       { type: "thinking", thinking: "a", signature: "short" },
       { type: "text", text: "hello" },
@@ -142,13 +145,12 @@ describe("stripFile", () => {
     assert.equal(result.thinkingRemoved, 1);
     assert.equal(result.dryRun, true);
 
-    // File should be unchanged
     const after = await readFile(file, "utf-8");
     assert.equal(after, content);
   });
 
   it("creates backup when requested", async () => {
-    const file = join(TEST_DIR, "backup.jsonl");
+    const file = tmpFile("strip-backup.jsonl");
     const content = buildSession([
       { type: "thinking", thinking: "a", signature: "short" },
       { type: "text", text: "hello" },
@@ -165,7 +167,7 @@ describe("stripFile", () => {
 
 describe("restoreFile", () => {
   it("restores from .bak file", async () => {
-    const file = join(TEST_DIR, "restore.jsonl");
+    const file = tmpFile("restore.jsonl");
     const original = '{"type":"original"}\n';
     const modified = '{"type":"modified"}\n';
     await writeFile(file, original, "utf-8");
@@ -179,7 +181,7 @@ describe("restoreFile", () => {
   });
 
   it("returns not-restored when no backup exists", async () => {
-    const file = join(TEST_DIR, "nobak.jsonl");
+    const file = tmpFile("restore-nobak.jsonl");
     await writeFile(file, '{"type":"test"}\n', "utf-8");
 
     const result = await restoreFile(file);
