@@ -213,6 +213,34 @@ export async function listProjects(): Promise<string[]> {
   }
 }
 
+async function pathExists(p: string): Promise<boolean> {
+  return stat(p).then(() => true, () => false);
+}
+
+/**
+ * Resolve a user-supplied target into an existing session file or project
+ * directory. Tries, in order:
+ *   1. the path as given (absolute, or relative to the current directory);
+ *   2. a project directory of that name under ~/.claude/projects/;
+ *   3. a session id / filename matching a .jsonl file in any project.
+ * Returns the resolved absolute path, or null if nothing matches.
+ */
+export async function resolveTarget(target: string): Promise<string | null> {
+  const direct = resolve(target);
+  if (await pathExists(direct)) return direct;
+
+  const inProjects = join(getProjectsDir(), target);
+  if (await pathExists(inProjects)) return inProjects;
+
+  const fileName = target.endsWith(".jsonl") ? target : `${target}.jsonl`;
+  for (const project of await listProjects()) {
+    const candidate = join(project, fileName);
+    if (await pathExists(candidate)) return candidate;
+  }
+
+  return null;
+}
+
 /**
  * Strip all session files in a project directory.
  */

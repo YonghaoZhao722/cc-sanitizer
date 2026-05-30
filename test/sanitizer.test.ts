@@ -4,7 +4,7 @@ import { writeFile, mkdir, rm, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomBytes } from "node:crypto";
-import { stripFile, scanFile, restoreFile } from "../src/sanitizer.js";
+import { stripFile, scanFile, restoreFile, resolveTarget } from "../src/sanitizer.js";
 
 const TEST_DIR = join(tmpdir(), `cc-sanitizer-test-${randomBytes(8).toString("hex")}`);
 
@@ -162,6 +162,46 @@ describe("stripFile", () => {
 
     const bak = await readFile(`${file}.bak`, "utf-8");
     assert.equal(bak, content);
+  });
+});
+
+describe("resolveTarget", () => {
+  const savedHome = process.env.HOME;
+  const fakeHome = join(TEST_DIR, "home");
+  const projectName = "-tmp-my-project";
+  const sessionId = "11111111-2222-3333-4444-555555555555";
+  const projectDir = join(fakeHome, ".claude", "projects", projectName);
+  const sessionFile = join(projectDir, `${sessionId}.jsonl`);
+
+  before(async () => {
+    await mkdir(projectDir, { recursive: true });
+    await writeFile(sessionFile, "{}\n", "utf-8");
+    process.env.HOME = fakeHome;
+  });
+
+  after(() => {
+    if (savedHome === undefined) delete process.env.HOME;
+    else process.env.HOME = savedHome;
+  });
+
+  it("resolves an existing absolute path as-is", async () => {
+    assert.equal(await resolveTarget(sessionFile), sessionFile);
+  });
+
+  it("resolves a bare session id against the projects dir", async () => {
+    assert.equal(await resolveTarget(sessionId), sessionFile);
+  });
+
+  it("resolves a bare session filename", async () => {
+    assert.equal(await resolveTarget(`${sessionId}.jsonl`), sessionFile);
+  });
+
+  it("resolves a bare project name", async () => {
+    assert.equal(await resolveTarget(projectName), projectDir);
+  });
+
+  it("returns null when nothing matches", async () => {
+    assert.equal(await resolveTarget("does-not-exist-anywhere"), null);
   });
 });
 

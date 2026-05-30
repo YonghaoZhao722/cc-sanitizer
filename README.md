@@ -44,6 +44,12 @@ npx cc-sanitizer strip <session>.jsonl --suspect-only  # remove blocks with no v
 
 ## Commands
 
+> **Targets** — `scan`, `strip`, and `restore` accept a file path, **or** a bare
+> session id (`<uuid>` or `<uuid>.jsonl`) or a project name. Bare ids and names are
+> resolved against `~/.claude/projects/`, so you can copy a name straight from the
+> output of `cc-sanitizer scan` and pass it back — no full path needed. Run any
+> command with no argument to list projects (or, for `scan`, scan everything).
+
 ### `scan`
 
 Scan session files for thinking blocks and report valid vs suspect signatures.

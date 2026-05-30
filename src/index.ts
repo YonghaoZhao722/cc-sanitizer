@@ -9,7 +9,8 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import ora from "ora";
-import { resolve, basename } from "node:path";
+import { join, basename } from "node:path";
+import { existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import {
   stripFile,
@@ -20,6 +21,7 @@ import {
   restoreProject,
   listProjects,
   getProjectsDir,
+  resolveTarget,
 } from "./sanitizer.js";
 import type { StripOptions, StripResult, ScanResult, RestoreResult } from "./types.js";
 
@@ -45,30 +47,13 @@ program
   )
   .option("-p, --project", "Treat path as a project directory (strip all sessions)", false)
   .action(async (path: string | undefined, opts: StripOptions & { project: boolean }) => {
-    const target = path ? resolve(path) : undefined;
-
-    if (!target) {
-      // No path given — list projects and let user pick
-      const projects = await listProjects();
-      if (projects.length === 0) {
-        console.log(chalk.yellow("No projects found in"), getProjectsDir());
-        return;
-      }
-      console.log(chalk.bold("Available projects:\n"));
-      for (const p of projects) {
-        console.log(`  ${chalk.cyan(basename(p))}  ${chalk.dim(p)}`);
-      }
-      console.log(
-        chalk.dim("\nUsage: cc-sanitizer strip <path> [--project]")
-      );
+    if (!path) {
+      await printProjectList("strip");
       return;
     }
 
-    const s = await stat(target).catch(() => null);
-    if (!s) {
-      console.error(chalk.red(`Path not found: ${target}`));
-      process.exit(1);
-    }
+    const target = await resolveOrExit(path);
+    const s = await stat(target);
 
     const stripOpts: StripOptions = {
       suspectOnly: opts.suspectOnly,
@@ -99,9 +84,7 @@ program
   .argument("[path]", "Session file (.jsonl) or project directory")
   .option("-p, --project", "Treat path as a project directory (scan all sessions)", false)
   .action(async (path: string | undefined, opts: { project: boolean }) => {
-    const target = path ? resolve(path) : undefined;
-
-    if (!target) {
+    if (!path) {
       const projects = await listProjects();
       if (projects.length === 0) {
         console.log(chalk.yellow("No projects found in"), getProjectsDir());
@@ -119,11 +102,8 @@ program
       return;
     }
 
-    const s = await stat(target).catch(() => null);
-    if (!s) {
-      console.error(chalk.red(`Path not found: ${target}`));
-      process.exit(1);
-    }
+    const target = await resolveOrExit(path);
+    const s = await stat(target);
 
     const spinner = ora("Scanning...").start();
     let results: ScanResult[];
@@ -144,29 +124,13 @@ program
   .argument("[path]", "Session file (.jsonl) or project directory")
   .option("-p, --project", "Treat path as a project directory (restore all backups)", false)
   .action(async (path: string | undefined, opts: { project: boolean }) => {
-    const target = path ? resolve(path) : undefined;
-
-    if (!target) {
-      const projects = await listProjects();
-      if (projects.length === 0) {
-        console.log(chalk.yellow("No projects found in"), getProjectsDir());
-        return;
-      }
-      console.log(chalk.bold("Available projects:\n"));
-      for (const p of projects) {
-        console.log(`  ${chalk.cyan(basename(p))}  ${chalk.dim(p)}`);
-      }
-      console.log(
-        chalk.dim("\nUsage: cc-sanitizer restore <path> [--project]")
-      );
+    if (!path) {
+      await printProjectList("restore");
       return;
     }
 
-    const s = await stat(target).catch(() => null);
-    if (!s) {
-      console.error(chalk.red(`Path not found: ${target}`));
-      process.exit(1);
-    }
+    const target = await resolveOrExit(path);
+    const s = await stat(target);
 
     let results: RestoreResult[];
     if (s.isDirectory() || opts.project) {
@@ -195,6 +159,58 @@ program
       console.log(chalk.bold(`\nRestored ${restored} session(s) from backup.`));
     }
   });
+
+// ── Target resolution ────────────────────────────────────────────────────────
+
+/**
+ * Resolve a target argument to an existing path, or print an error and exit.
+ */
+async function resolveOrExit(path: string): Promise<string> {
+  const target = await resolveTarget(path);
+  if (!target) {
+    console.error(chalk.red(`Path not found: ${path}`));
+    console.error(
+      chalk.dim(`Searched the current directory and ${getProjectsDir()}`)
+    );
+    process.exit(1);
+  }
+  return target;
+}
+
+/**
+ * List available projects with a usage hint (shown when no target is given).
+ */
+async function printProjectList(command: string): Promise<void> {
+  const projects = await listProjects();
+  if (projects.length === 0) {
+    console.log(chalk.yellow("No projects found in"), getProjectsDir());
+    return;
+  }
+  console.log(chalk.bold("Available projects:\n"));
+  for (const p of projects) {
+    console.log(`  ${chalk.cyan(basename(p))}  ${chalk.dim(p)}`);
+  }
+  console.log(
+    chalk.dim(`\nUsage: cc-sanitizer ${command} <project|session|path> [--project]`)
+  );
+}
+
+/**
+ * Claude Code project directories are named after the encoded working
+ * directory, so they begin with "-" (the leading "/" of an absolute path).
+ * Commander would treat such a token as an option, so rewrite any argument
+ * that names an existing project directory to its absolute path before
+ * parsing — letting `cc-sanitizer strip -Users-me-proj --project` work.
+ */
+function normalizeArgv(argv: string[]): string[] {
+  const projectsDir = getProjectsDir();
+  return argv.map((arg, i) => {
+    if (i < 2) return arg; // node + script
+    if (!arg.startsWith("-") || arg.startsWith("--")) return arg;
+    const candidate = join(projectsDir, arg);
+    return existsSync(candidate) ? candidate : arg;
+  });
+}
 
 // ── Output helpers ───────────────────────────────────────────────────────────
 
@@ -297,4 +313,4 @@ function printScanResults(results: ScanResult[]): void {
   }
 }
 
-program.parse();
+program.parse(normalizeArgv(process.argv));
