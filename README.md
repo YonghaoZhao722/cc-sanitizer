@@ -27,30 +27,19 @@ When you switch between third-party models (GLM, DeepSeek, etc.) and official An
 
 This happens because third-party models produce thinking blocks without valid Anthropic signatures. `cc-sanitizer` strips these blocks from your session files so you can continue using official models.
 
-## Installation
-
-```bash
-# Run directly (no install needed)
-npx cc-sanitizer
-
-# Or install globally
-npm install -g cc-sanitizer
-```
-
 ## Quick Start
 
+No install needed. Scan all your Claude Code sessions for suspect thinking blocks:
+
 ```bash
-# Scan a session for suspect thinking blocks
-cc-sanitizer scan ~/.claude/projects/<project>/<session>.jsonl
+npx cc-sanitizer scan
+```
 
-# Preview what would be removed
-cc-sanitizer strip ~/.claude/projects/<project>/<session>.jsonl --dry-run
+Found a broken session? Preview, then strip the suspect blocks:
 
-# Strip suspect blocks (keeps valid Anthropic signatures)
-cc-sanitizer strip ~/.claude/projects/<project>/<session>.jsonl --suspect-only
-
-# Strip all thinking blocks
-cc-sanitizer strip ~/.claude/projects/<project>/<session>.jsonl
+```bash
+npx cc-sanitizer strip <session>.jsonl --dry-run       # preview changes
+npx cc-sanitizer strip <session>.jsonl --suspect-only  # remove blocks with no valid signature
 ```
 
 ## Commands
