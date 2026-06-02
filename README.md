@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/hero.svg" alt="cc-sanitizer — strip invalid thinking blocks to fix cross-model Claude Code sessions" width="100%">
+<img src="https://raw.githubusercontent.com/YonghaoZhao722/cc-sanitizer/main/assets/hero.svg" alt="cc-sanitizer — strip invalid thinking blocks to fix cross-model Claude Code sessions" width="100%">
 
 # CC-Sanitizer
 
